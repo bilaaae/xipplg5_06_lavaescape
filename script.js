@@ -76,7 +76,7 @@ class Platform {
 
         if (this.type === PLATFORM_TYPES.TRAP) {
             this.trapTimer++;
-            if (this.trapTimer > 120) { // 2 seconds
+            if (this.trapTimer > 260 { // 4 seconds
                 this.trapActive = !this.trapActive;
                 this.trapTimer = 0;
             }
