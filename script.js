@@ -9,7 +9,7 @@ canvas.height = window.innerHeight;
 let gameRunning = true;
 let camera = { y: 0 };
 let lavaHeight = canvas.height; // Lava mulai dari paling bawah
-let lavaSpeed = 0.3; // Kecepatan lava naik (lebih lambat)
+let lavaSpeed = 0.1; // Kecepatan lava naik (lebih lambat)
 let startTime = Date.now();
 let gameTime = 0;
 let score = 0;
@@ -23,7 +23,7 @@ const player = {
     velX: 0,
     velY: 0,
     speed: 5,
-    jumpPower: 15,
+    jumpPower: 25,
     onGround: false,
     color: '#FFD700'
 };
@@ -56,7 +56,7 @@ class Platform {
         this.moveDirection = Math.random() > 0.5 ? 1 : -1;
         this.moveSpeed = 1;
         this.trapActive = false;
-        this.trapTimer = 0;
+        this.trapTimer = 5;
     }
 
     update() {
