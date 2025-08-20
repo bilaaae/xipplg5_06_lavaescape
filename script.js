@@ -19,7 +19,7 @@ const player = {
     x: canvas.width / 2,
     y: canvas.height - 200,
     width: 20,
-    height: 30,
+    height: 40,
     velX: 0,
     velY: 0,
     speed: 5,
@@ -52,9 +52,9 @@ class Platform {
         this.width = width;
         this.height = 15;
         this.type = type;
-        this.health = type === PLATFORM_TYPES.CRUMBLING ? 100 : 1000;
+        this.health = type === PLATFORM_TYPES.CRUMBLING ? 200 : 2000;
         this.moveDirection = Math.random() > 0.5 ? 1 : -1;
-        this.moveSpeed = 1;
+        this.moveSpeed = 100;
         this.trapActive = false;
         this.trapTimer = 5;
     }
@@ -76,7 +76,7 @@ class Platform {
 
         if (this.type === PLATFORM_TYPES.TRAP) {
             this.trapTimer++;
-            if (this.trapTimer > 120) { // 2 seconds
+            if (this.trapTimer > 260) { // 4 seconds
                 this.trapActive = !this.trapActive;
                 this.trapTimer = 0;
             }
@@ -85,14 +85,14 @@ class Platform {
 
     crumble() {
         // Create crumble particles
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < 500; i++) {
             particles.push({
                 x: this.x + Math.random() * this.width,
                 y: this.y,
                 velX: (Math.random() - 0.5) * 8,
                 velY: Math.random() * -5,
-                life: 60,
-                color: '#8B4513'
+                life: 100,
+                color: '#4B3621'
             });
         }
     }
@@ -104,7 +104,13 @@ class Platform {
                 color = '#4A4A4A';
                 break;
             case PLATFORM_TYPES.CRUMBLING:
-                color = this.health > 50 ? '#8B4513' : '#A0522D';
+                if (this.health> 100){
+                    color = '#8B4513'; // 100% hp
+                }else if (this.health> 50){
+                    color = '#A0522D'; // 50% hp
+                }else {
+                    color = '#CD853F'; // akan hancur
+                }
                 break;
             case PLATFORM_TYPES.MOVING:
                 color = '#4169E1';
