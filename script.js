@@ -54,7 +54,7 @@ class Platform {
         this.type = type;
         this.health = type === PLATFORM_TYPES.CRUMBLING ? 200 : 2000;
         this.moveDirection = Math.random() > 0.5 ? 1 : -1;
-        this.moveSpeed = 100;
+        this.moveSpeed = 5;
         this.trapActive = false;
         this.trapTimer = 5;
     }
