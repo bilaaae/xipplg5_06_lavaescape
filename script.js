@@ -1,6 +1,18 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
+const bgImages = [
+    "Image/bagroundpagi.png",
+    "Image/bagroundsore.png",
+    "Image/bagroundmalam.png"
+].map(src => {
+    const img = new Image();
+    img.src = src;
+    return img;
+});
+
+let currentBg = 0;
+
 // Set canvas size
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
@@ -316,6 +328,11 @@ function update() {
         score = currentHeight;
     }
 
+    // Ganti background tiap 150m
+    if (score % 150 === 0) {
+        currentBg = (currentBg + 1) % bgImages.length;
+    }
+
     // Update particles
     updateParticles();
 
@@ -338,13 +355,8 @@ function update() {
 
 // Draw game
 function draw() {
-    // Clear canvas with gradient sky
-    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    gradient.addColorStop(0, '#87CEEB');
-    gradient.addColorStop(0.6, '#FF6B35');
-    gradient.addColorStop(1, '#DC143C');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Draw background image sesuai currentBg
+    ctx.drawImage(bgImages[currentBg], 0, 0, canvas.width, canvas.height);
 
     // Draw lava - dari bawah naik perlahan
     const lavaScreenY = lavaHeight - camera.y;
