@@ -2,16 +2,17 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
 const bgImages = [
-    "Image/bagroundpagi.png",
-    "Image/bagroundsore.png",
-    "Image/bagroundmalam.png"
+    "Image/bagroundpagi.png",   // index 0 = pagi
+    "Image/bagroundsore.png",   // index 1 = sore
+    "Image/bagroundmalam.png"   // index 2 = malam
 ].map(src => {
     const img = new Image();
     img.src = src;
     return img;
 });
 
-let currentBg = 0;
+let currentBg = 0;   // mulai dari pagi
+let lastBgChange = 0; // ketinggian terakhir saat ganti background
 
 // Set canvas size
 canvas.width = window.innerWidth;
@@ -313,6 +314,11 @@ function update() {
         currentBg = (currentBg + 1) % bgImages.length;
     }
 
+    // Ganti background tiap 150m
+    if (score % 150 === 0) {
+        currentBg = (currentBg + 1) % bgImages.length;
+    }
+
     updateParticles();
 
     const highestPlatform = Math.min(...platforms.map(p => p.y));
@@ -400,13 +406,10 @@ function drawPlayer() {
 
 // Draw game
 function draw() {
-    // Clear canvas with gradient sky
-    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    gradient.addColorStop(0, '#87CEEB');
-    gradient.addColorStop(0.6, '#FF6B35');
-    gradient.addColorStop(1, '#DC143C');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Gambar background sesuai currentBg (pagi → sore → malam)
+    if (bgImages[currentBg]) {
+        ctx.drawImage(bgImages[currentBg], 0, 0, canvas.width, canvas.height);
+    }
 
     const lavaScreenY = lavaHeight - camera.y;
     if (lavaScreenY < canvas.height) {
