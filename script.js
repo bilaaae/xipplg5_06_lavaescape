@@ -2,9 +2,9 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
 const bgImages = [
-    "Image/bagroundpagi.png",   // index 0 = pagi
-    "Image/bagroundsore.png",   // index 1 = sore
-    "Image/bagroundmalam.png"   // index 2 = malam
+    "Image/bagroundpagi.png",
+    "Image/bagroundsore.png",
+    "Image/bagroundmalam.png"
 ].map(src => {
     const img = new Image();
     img.src = src;
@@ -406,7 +406,7 @@ function drawPlayer() {
 
 // Draw game
 function draw() {
-    // Gambar background sesuai currentBg (pagi → sore → malam)
+    // gambar background sesuai currentBg (pagi → sore → malam)
     if (bgImages[currentBg]) {
         ctx.drawImage(bgImages[currentBg], 0, 0, canvas.width, canvas.height);
     }
