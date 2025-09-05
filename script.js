@@ -20,8 +20,8 @@ canvas.height = window.innerHeight;
 // Game variables
 let gameRunning = true;
 let camera = { y: 0 };
-let lavaHeight = canvas.height; // Lava mulai dari paling bawah
-let lavaSpeed = 0.1; // Kecepatan lava naik (lebih lambat)
+let lavaHeight = canvas.height;
+let lavaSpeed = 0.1;
 let startTime = Date.now();
 let gameTime = 0;
 let score = 0;
@@ -37,7 +37,7 @@ const player = {
     speed: 5,
     jumpPower: 25,
     onGround: false,
-    color: '#FFD700'
+    color: '#228B22' // hijau katak
 };
 
 // Platforms array
@@ -88,7 +88,7 @@ class Platform {
 
         if (this.type === PLATFORM_TYPES.TRAP) {
             this.trapTimer++;
-            if (this.trapTimer > 260) { // 4 seconds
+            if (this.trapTimer > 260) {
                 this.trapActive = !this.trapActive;
                 this.trapTimer = 0;
             }
@@ -96,7 +96,6 @@ class Platform {
     }
 
     crumble() {
-        // Create crumble particles
         for (let i = 0; i < 500; i++) {
             particles.push({
                 x: this.x + Math.random() * this.width,
@@ -116,12 +115,12 @@ class Platform {
                 color = '#4A4A4A';
                 break;
             case PLATFORM_TYPES.CRUMBLING:
-                if (this.health> 100){
-                    color = '#8B4513'; // 100% hp
-                }else if (this.health> 50){
-                    color = '#A0522D'; // 50% hp
-                }else {
-                    color = '#CD853F'; // akan hancur
+                if (this.health > 100){
+                    color = '#8B4513';
+                } else if (this.health > 50){
+                    color = '#A0522D';
+                } else {
+                    color = '#CD853F';
                 }
                 break;
             case PLATFORM_TYPES.MOVING:
@@ -135,7 +134,6 @@ class Platform {
         ctx.fillStyle = color;
         ctx.fillRect(this.x, this.y - camera.y, this.width, this.height);
 
-        // Add some visual effects
         if (this.type === PLATFORM_TYPES.CRUMBLING && this.health < 100) {
             ctx.fillStyle = '#FF4500';
             ctx.fillRect(this.x, this.y - camera.y, this.width, 2);
@@ -153,13 +151,11 @@ class Platform {
 // Initialize platforms
 function initPlatforms() {
     platforms = [];
-    // Starting platform
     platforms.push(new Platform(canvas.width / 2 - 100, canvas.height - 100, 200, PLATFORM_TYPES.NORMAL));
     
-    // Generate platforms going up
     for (let i = 1; i < 50; i++) {
         const x = Math.random() * (canvas.width - 150);
-        const y = canvas.height - 100 - (i * 80); // Platform lebih rapat (80px gap)
+        const y = canvas.height - 100 - (i * 80);
         const width = 100 + Math.random() * 100;
         
         let type = PLATFORM_TYPES.NORMAL;
@@ -194,7 +190,7 @@ function updateParticles() {
         const p = particles[i];
         p.x += p.velX;
         p.y += p.velY;
-        p.velY += 0.3; // gravity
+        p.velY += 0.3;
         p.life--;
         
         if (p.life <= 0) {
@@ -213,7 +209,7 @@ function drawParticles() {
     });
 }
 
-// Check collision between player and platforms
+// Check collision
 function checkCollisions() {
     player.onGround = false;
     
@@ -233,13 +229,11 @@ function checkCollisions() {
                 player.velY = 0;
                 player.onGround = true;
 
-                // Platform effects
                 if (platform.type === PLATFORM_TYPES.CRUMBLING) {
                     platform.health -= 5;
                 }
                 
                 if (platform.type === PLATFORM_TYPES.TRAP && platform.trapActive) {
-                    // Create death particles
                     for (let i = 0; i < 20; i++) {
                         particles.push({
                             x: player.x + player.width/2,
@@ -266,48 +260,35 @@ function checkCollisions() {
 function update() {
     if (!gameRunning) return;
 
-    // Player movement
     if (keys['a'] || keys['arrowleft']) {
         player.velX = -player.speed;
     } else if (keys['d'] || keys['arrowright']) {
         player.velX = player.speed;
     } else {
-        player.velX *= 0.8; // friction
+        player.velX *= 0.8;
     }
 
-    // Apply gravity
     player.velY += 0.8;
-
-    // Update player position
     player.x += player.velX;
     player.y += player.velY;
 
-    // Keep player in bounds horizontally
     if (player.x < 0) player.x = 0;
     if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
 
-    // Check collisions
     checkCollisions();
-
-    // Update platforms
     platforms.forEach(platform => platform.update());
 
-    // Update camera to follow player
     const targetCameraY = player.y - canvas.height / 2;
     camera.y += (targetCameraY - camera.y) * 0.1;
 
-    // Update lava - naik perlahan dari bawah
     lavaHeight -= lavaSpeed;
-    lavaSpeed += 0.001; // Lava naik semakin cepat (pelan)
+    lavaSpeed += 0.001;
 
-    // Update game time
     if (gameRunning) {
         gameTime = Math.floor((Date.now() - startTime) / 1000);
     }
 
-    // Check if player touched lava - INSTANT DEATH!
     if (player.y + player.height >= lavaHeight) {
-        // Create dramatic death particles
         for (let i = 0; i < 30; i++) {
             particles.push({
                 x: player.x + player.width/2,
@@ -322,7 +303,6 @@ function update() {
         return;
     }
 
-    // Update score based on height
     const currentHeight = Math.max(0, Math.floor((canvas.height - 150 - player.y) / 10));
     if (currentHeight > score) {
         score = currentHeight;
@@ -333,13 +313,11 @@ function update() {
         currentBg = (currentBg + 1) % bgImages.length;
     }
 
-    // Update particles
     updateParticles();
 
-    // Generate more platforms as player goes higher
     const highestPlatform = Math.min(...platforms.map(p => p.y));
     if (highestPlatform > player.y - 1000) {
-        const newY = highestPlatform - 80; // Jarak platform konsisten 80px
+        const newY = highestPlatform - 80;
         const newX = Math.random() * (canvas.width - 150);
         const newWidth = 100 + Math.random() * 100;
         
@@ -353,12 +331,83 @@ function update() {
     }
 }
 
+// Draw player katak 🐸
+function drawPlayer() {
+    const px = player.x;
+    const py = player.y - camera.y;
+    const centerX = px + player.width / 2;
+    const centerY = py + player.height / 2;
+
+    // --- Badan hijau ---
+    ctx.fillStyle = player.color;
+    ctx.beginPath();
+    ctx.ellipse(centerX, centerY, 35, 32, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // --- Perut hijau muda ---
+    ctx.fillStyle = "#A5D6A7";
+    ctx.beginPath();
+    ctx.ellipse(centerX, centerY + 8, 22, 20, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // --- Mata kiri ---
+    ctx.fillStyle = player.color;
+    ctx.beginPath();
+    ctx.arc(centerX - 20, centerY - 28, 15, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = "white";
+    ctx.beginPath();
+    ctx.arc(centerX - 20, centerY - 28, 11, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = "black";
+    ctx.beginPath();
+    ctx.arc(centerX - 20, centerY - 28, 6, 0, Math.PI * 2);
+    ctx.fill();
+
+    // --- Mata kanan ---
+    ctx.fillStyle = player.color;
+    ctx.beginPath();
+    ctx.arc(centerX + 20, centerY - 28, 15, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = "white";
+    ctx.beginPath();
+    ctx.arc(centerX + 20, centerY - 28, 11, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = "black";
+    ctx.beginPath();
+    ctx.arc(centerX + 20, centerY - 28, 6, 0, Math.PI * 2);
+    ctx.fill();
+
+    // --- Pipi pink ---
+    ctx.fillStyle = "pink";
+    ctx.beginPath();
+    ctx.arc(centerX - 18, centerY - 5, 5, 0, Math.PI * 2);
+    ctx.arc(centerX + 18, centerY - 5, 5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // --- Mulut senyum ---
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, 12, 0, Math.PI);
+    ctx.stroke();
+}
+
+
 // Draw game
 function draw() {
-    // Draw background image sesuai currentBg
-    ctx.drawImage(bgImages[currentBg], 0, 0, canvas.width, canvas.height);
+    // Clear canvas with gradient sky
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, '#87CEEB');
+    gradient.addColorStop(0.6, '#FF6B35');
+    gradient.addColorStop(1, '#DC143C');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Draw lava - dari bawah naik perlahan
     const lavaScreenY = lavaHeight - camera.y;
     if (lavaScreenY < canvas.height) {
         const lavaGradient = ctx.createLinearGradient(0, lavaScreenY, 0, canvas.height);
@@ -368,37 +417,26 @@ function draw() {
         ctx.fillStyle = lavaGradient;
         ctx.fillRect(0, Math.max(0, lavaScreenY), canvas.width, canvas.height - Math.max(0, lavaScreenY));
 
-        // Lava bubbles effect
-        if (lavaScreenY < canvas.height) {
-            for (let i = 0; i < 20; i++) {
-                ctx.fillStyle = `rgba(255, 255, 0, ${Math.random() * 0.5})`;
-                const bubbleX = Math.random() * canvas.width;
-                const bubbleY = Math.max(lavaScreenY, 0) + Math.random() * (canvas.height - Math.max(lavaScreenY, 0));
-                ctx.beginPath();
-                ctx.arc(bubbleX, bubbleY, Math.random() * 10 + 2, 0, Math.PI * 2);
-                ctx.fill();
-            }
+        for (let i = 0; i < 20; i++) {
+            ctx.fillStyle = `rgba(255, 255, 0, ${Math.random() * 0.5})`;
+            const bubbleX = Math.random() * canvas.width;
+            const bubbleY = Math.max(lavaScreenY, 0) + Math.random() * (canvas.height - Math.max(lavaScreenY, 0));
+            ctx.beginPath();
+            ctx.arc(bubbleX, bubbleY, Math.random() * 10 + 2, 0, Math.PI * 2);
+            ctx.fill();
         }
     }
 
-    // Draw platforms
     platforms.forEach(platform => {
         if (platform.y - camera.y < canvas.height + 50 && platform.y - camera.y > -50) {
             platform.draw();
         }
     });
 
-    // Draw particles
     drawParticles();
 
-    // Draw player
-    ctx.fillStyle = player.color;
-    ctx.fillRect(player.x, player.y - camera.y, player.width, player.height);
-    
-    // Player eyes
-    ctx.fillStyle = '#000';
-    ctx.fillRect(player.x + 5, player.y - camera.y + 5, 3, 3);
-    ctx.fillRect(player.x + 12, player.y - camera.y + 5, 3, 3);
+    // Player katak
+    drawPlayer();
 }
 
 // Game over
@@ -410,7 +448,7 @@ function gameOver() {
     document.getElementById('gameOver').style.display = 'block';
 }
 
-// Leaderboard functions
+// Leaderboard
 function getLeaderboard() {
     const saved = localStorage.getItem('lavaEscapeLeaderboard');
     return saved ? JSON.parse(saved) : [];
@@ -421,11 +459,11 @@ function updateLeaderboard(newScore, newTime) {
     leaderboard.push({ score: newScore, time: newTime });
     leaderboard.sort((a, b) => {
         if (b.score === a.score) {
-            return b.time - a.time; // Jika skor sama, waktu lebih lama menang
+            return b.time - a.time;
         }
-        return b.score - a.score; // Skor lebih tinggi menang
+        return b.score - a.score;
     });
-    leaderboard = leaderboard.slice(0, 5); // Keep top 5
+    leaderboard = leaderboard.slice(0, 5);
     localStorage.setItem('lavaEscapeLeaderboard', JSON.stringify(leaderboard));
     displayLeaderboard();
 }
@@ -438,7 +476,6 @@ function displayLeaderboard() {
     leaderboard.forEach((entry, index) => {
         const item = document.createElement('div');
         item.className = 'leaderboard-item';
-        // Handle both old format (number) and new format (object)
         if (typeof entry === 'number') {
             item.innerHTML = `${index + 1}. ${entry}m`;
         } else {
@@ -448,7 +485,7 @@ function displayLeaderboard() {
     });
 }
 
-// Restart game
+// Restart
 function restart() {
     gameRunning = true;
     player.x = canvas.width / 2;
@@ -467,16 +504,15 @@ function restart() {
     document.getElementById('gameOver').style.display = 'none';
 }
 
-// Event listeners
 document.getElementById('restartBtn').addEventListener('click', restart);
 
-// Update UI
+// UI
 function updateUI() {
     document.getElementById('score').textContent = score;
     document.getElementById('time').textContent = gameTime;
 }
 
-// Game loop
+// Loop
 function gameLoop() {
     update();
     draw();
@@ -484,13 +520,13 @@ function gameLoop() {
     requestAnimationFrame(gameLoop);
 }
 
-// Handle window resize
+// Resize
 window.addEventListener('resize', () => {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 });
 
-// Initialize game
+// Init
 initPlatforms();
 displayLeaderboard();
 gameLoop();
