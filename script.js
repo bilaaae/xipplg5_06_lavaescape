@@ -63,6 +63,95 @@ const keys = {};
 // Particles for effects
 let particles = [];
 
+let lavaParticles = [];
+
+// spawn percikan dari permukaan lava
+function spawnLavaParticles() {
+    if (Math.random() < 0.3) { // kemungkinan muncul tiap frame
+        lavaParticles.push({
+            x: Math.random() * canvas.width,
+            y: lavaHeight,
+            velX: (Math.random() - 0.5) * 2,
+            velY: -(Math.random() * 5 + 3),
+            life: 60,
+            color: Math.random() > 0.5 ? "#FFA500" : "#FFD700"
+        });
+    }
+}
+
+function updateLavaParticles() {
+    for (let i = lavaParticles.length - 1; i >= 0; i--) {
+        let p = lavaParticles[i];
+        p.x += p.velX;
+        p.y += p.velY;
+        p.velY += 0.2; // gravitasi
+        p.life--;
+
+        if (p.life <= 0) lavaParticles.splice(i, 1);
+    }
+}
+
+function drawLavaParticles() {
+    lavaParticles.forEach(p => {
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.life / 60;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y - camera.y, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+    });
+}
+
+let smokeParticles = [];
+
+function spawnSmoke() {
+    if (Math.random() < 0.1) {
+        smokeParticles.push({
+            x: Math.random() * canvas.width,
+            y: lavaHeight,
+            velY: -(Math.random() * 1 + 0.5),
+            life: 100,
+            size: Math.random() * 20 + 10
+        });
+    }
+}
+
+function updateSmoke() {
+    for (let i = smokeParticles.length - 1; i >= 0; i--) {
+        let s = smokeParticles[i];
+        s.y += s.velY;
+        s.life--;
+        if (s.life <= 0) smokeParticles.splice(i, 1);
+    }
+}
+
+function drawSmoke() {
+    smokeParticles.forEach(s => {
+        ctx.fillStyle = "rgba(50, 50, 50, " + (s.life / 100) + ")";
+        ctx.beginPath();
+        ctx.arc(s.x, s.y - camera.y, s.size, 0, Math.PI * 2);
+        ctx.fill();
+    });
+}
+
+function lavaExplosion() {
+    if (Math.random() < 0.005) { // 0.5% chance tiap frame
+        for (let i = 0; i < 40; i++) {
+            lavaParticles.push({
+                x: Math.random() * canvas.width,
+                y: lavaHeight,
+                velX: (Math.random() - 0.5) * 6,
+                velY: -(Math.random() * 8 + 5),
+                life: 80,
+                color: Math.random() > 0.5 ? "#FF4500" : "#FFD700"
+            });
+        }
+    }
+}
+
+
+
+
 class Platform {
     constructor(x, y, width, type = PLATFORM_TYPES.NORMAL) {
         this.x = x;
@@ -418,6 +507,11 @@ function update() {
     player.velY += 0.8; // normal gravity
     }
 
+    spawnLavaParticles();
+    spawnSmoke();
+    lavaExplosion();
+    updateLavaParticles();
+    updateSmoke();
 }
 
 // Draw player katak 🐸
@@ -526,6 +620,10 @@ function draw() {
 
     //jetpacks
     jetpacks.forEach(j => j.draw());
+
+    drawLavaParticles();
+    drawSmoke();
+
 }
 
 // Game over
