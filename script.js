@@ -38,11 +38,16 @@ const player = {
     speed: 5,
     jumpPower: 25,
     onGround: false,
-    color: '#228B22' // hijau katak
+    color: '#228B22', // hijau katak
+    hasJetpack: false,
+    jetpackTime: 0
 };
 
 // Platforms array
 let platforms = [];
+
+//Jetpacks
+let jetpacks = [];
 
 // Platform types
 const PLATFORM_TYPES = {
@@ -149,25 +154,58 @@ class Platform {
     }
 }
 
+class Jetpack {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.width = 30;
+        this.height = 30;
+        this.collected = false;
+    }
+
+    draw() {
+        if (!this.collected) {
+            ctx.fillStyle = "gold";
+            ctx.beginPath();
+            ctx.rect(this.x, this.y - camera.y, this.width, this.height);
+            ctx.fill();
+
+            ctx.fillStyle = "black";
+            ctx.font = "16px Arial";
+            ctx.fillText("🚀", this.x + 5, this.y - camera.y + 22);
+        }
+    }
+}
+
+
 // Initialize platforms
 function initPlatforms() {
     platforms = [];
+    jetpacks = [];
+
+    // platform dasar agar player tidak jatuh
     platforms.push(new Platform(canvas.width / 2 - 100, canvas.height - 100, 200, PLATFORM_TYPES.NORMAL));
-    
+
     for (let i = 1; i < 50; i++) {
         const x = Math.random() * (canvas.width - 150);
         const y = canvas.height - 100 - (i * 80);
         const width = 100 + Math.random() * 100;
-        
+
         let type = PLATFORM_TYPES.NORMAL;
         const rand = Math.random();
         if (rand < 0.2) type = PLATFORM_TYPES.CRUMBLING;
         else if (rand < 0.35) type = PLATFORM_TYPES.MOVING;
         else if (rand < 0.45) type = PLATFORM_TYPES.TRAP;
-        
-        platforms.push(new Platform(x, y, width, type));
+
+        const platform = new Platform(x, y, width, type);
+        platforms.push(platform);
+
+        // spawn jetpack 5% chance
+        if (Math.random() < 0.2) {
+            jetpacks.push(new Jetpack(platform.x + platform.width / 2, platform.y - 40));
+            }
+        }
     }
-}
 
 // Handle input
 window.addEventListener('keydown', (e) => {
@@ -255,6 +293,20 @@ function checkCollisions() {
             }
         }
     });
+
+    jetpacks.forEach(jetpack => {
+    if (!jetpack.collected &&
+        player.x < jetpack.x + jetpack.width &&
+        player.x + player.width > jetpack.x &&
+        player.y < jetpack.y + jetpack.height &&
+        player.y + player.height > jetpack.y) {
+        
+        jetpack.collected = true;
+        player.hasJetpack = true;
+        player.jetpackTime = 500; // durasi jetpack (frame ±8 detik)
+    }
+    });
+
 }
 
 // Update game
@@ -269,7 +321,6 @@ function update() {
         player.velX *= 0.8;
     }
 
-    player.velY += 0.8;
     player.x += player.velX;
     player.y += player.velY;
 
@@ -333,8 +384,40 @@ function update() {
         else if (rand < 0.4) type = PLATFORM_TYPES.MOVING;
         else if (rand < 0.5) type = PLATFORM_TYPES.TRAP;
         
-        platforms.push(new Platform(newX, newY, newWidth, type));
+        const newPlatform = new Platform(newX, newY, newWidth, type);
+        platforms.push(newPlatform);
+
+        // 3% chance spawn jetpack di platform baru
+        if (Math.random() < 0.03) {
+        jetpacks.push(new Jetpack(newPlatform.x + newPlatform.width / 2, newPlatform.y - 40));
+        }
+
     }
+
+    if (player.hasJetpack) {
+    player.velY = -5; // terbang perlahan ke atas
+    player.jetpackTime--;
+
+        // 🔥 partikel api jetpack
+    for (let i = 0; i < 3; i++) {
+        particles.push({
+            x: player.x + player.width / 2 + (Math.random() - 0.5) * 10,
+            y: player.y + player.height,
+            velX: (Math.random() - 0.5) * 2,
+            velY: Math.random() * 2 + 1,
+            life: 30,
+            color: Math.random() > 0.5 ? '#FFA500' : (Math.random() > 0.5 ? '#FF4500' : '#CCCCCC')
+        });
+    }
+
+
+    if (player.jetpackTime <= 0) {
+        player.hasJetpack = false; // habis waktunya
+    }
+    } else {
+    player.velY += 0.8; // normal gravity
+    }
+
 }
 
 // Draw player katak 🐸
@@ -440,6 +523,9 @@ function draw() {
 
     // Player katak
     drawPlayer();
+
+    //jetpacks
+    jetpacks.forEach(j => j.draw());
 }
 
 // Game over
@@ -505,6 +591,10 @@ function restart() {
     particles = [];
     initPlatforms();
     document.getElementById('gameOver').style.display = 'none';
+    player.hasJetpack = false;
+    player.jetpackTime = 0;
+    jetpacks = [];
+
 }
 
 document.getElementById('restartBtn').addEventListener('click', restart);
