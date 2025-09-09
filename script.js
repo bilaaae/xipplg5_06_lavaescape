@@ -710,6 +710,19 @@ function gameLoop() {
     updateUI();
     requestAnimationFrame(gameLoop);
 }
+let musicStarted = false;
+
+function startMusicOnce() {
+    if (!musicStarted) {
+        bgMusic.volume = 0.5;
+        bgMusic.play();
+        musicStarted = true;
+    }
+}
+
+// Saat pemain pencet tombol apapun → mulai musik
+window.addEventListener("keydown", startMusicOnce);
+
 
 // Resize
 window.addEventListener('resize', () => {
