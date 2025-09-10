@@ -290,7 +290,7 @@ function initPlatforms() {
         platforms.push(platform);
 
         // spawn jetpack 5% chance
-        if (Math.random() < 0.2) {
+        if (Math.random() < 0.1) {
             jetpacks.push(new Jetpack(platform.x + platform.width / 2, platform.y - 40));
             }
         }
